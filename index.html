@@ -3,72 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevCore Interactive</title>
+    <title>CoreEditor // Web Builder</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>[x-cloak] { display: none !important; }</style>
+    <!-- Prism.js Themes for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        /* Trick to overlay textarea on top of highlighted code */
+        .editor-container textarea, .editor-container pre {
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 16px;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            tab-size: 4;
+        }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-200 font-sans p-4 md:p-8" x-data="{ activeTab: 'dashboard', sidebarOpen: false }">
+<body class="bg-[#090d16] text-slate-200 min-h-screen flex flex-col" 
+      x-data="editorApp()" 
+      x-init="$watch('code', value => highlightCode())">
 
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
-        
-        <!-- Sidebar Navigation -->
-        <aside class="md:w-64 space-y-4">
-            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-                <h1 class="text-xl font-bold text-white mb-6">CORE<span class="text-indigo-500">.</span>SYSTEM</h1>
-                <nav class="space-y-2">
-                    <button @click="activeTab = 'dashboard'" :class="activeTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'" class="w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3">
-                        <i class="fa-solid fa-chart-line"></i> Dashboard
-                    </button>
-                    <button @click="activeTab = 'tools'" :class="activeTab === 'tools' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'" class="w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3">
-                        <i class="fa-solid fa-screwdriver-wrench"></i> Toolkits
-                    </button>
-                </nav>
+    <!-- HEADER BAR -->
+    <header class="h-16 border-b border-slate-800 bg-[#0f172a]/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                <i class="fa-solid fa-code text-sm"></i>
             </div>
-        </aside>
+            <span class="text-sm md:text-base font-bold tracking-wider text-white">CORE<span class="text-indigo-500">EDITOR</span></span>
+        </div>
 
-        <!-- Main Content -->
-        <main class="flex-1 bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-800 min-h-[500px]">
+        <!-- Toolbar Actions -->
+        <div class="flex items-center gap-2">
+            <button @click="downloadHtml" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs md:text-sm rounded-lg flex items-center gap-2 transition">
+                <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Export .html</span>
+            </button>
+            <button @click="clearEditor" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 rounded-lg text-xs md:text-sm transition" title="Clear Code">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1600px] w-full mx-auto">
+        
+        <!-- LEFT COLUMN: EDITOR & DROPZONE -->
+        <div class="flex flex-col gap-4 h-[calc(100vh-120px)] lg:h-auto min-h-[450px]">
             
-            <!-- Dashboard View -->
-            <div x-show="activeTab === 'dashboard'" x-cloak class="space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-bold">System Status</h2>
-                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-mono">LIVE</span>
+            <!-- MAGIC DRAG & DROP ZONE -->
+            <div class="border-2 border-dashed border-slate-800 hover:border-indigo-500 bg-[#0f172a] rounded-xl p-4 transition text-center relative"
+                 @dragover.prevent="dragOver = true"
+                 @dragleave.prevent="dragOver = false"
+                 @drop.prevent="handleDrop($event)"
+                 :class="dragOver ? 'border-indigo-500 bg-indigo-600/5' : ''"
+                 x-data="{ dragOver: false }">
+                <input type="file" id="fileInput" class="hidden" accept="image/*" @change="handleFileSelect($event)">
+                <label for="fileInput" class="cursor-pointer flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-xl animate-pulse"></i>
+                    <p class="text-xs md:text-sm font-medium">Tarik & lempar gambar lu di sini, atau <span class="text-indigo-400 underline">klik buat upload</span></p>
+                </label>
+            </div>
+
+            <!-- CODE EDITOR INPUT -->
+            <div class="flex-1 bg-[#0f172a] rounded-xl border border-slate-800 flex flex-col overflow-hidden relative">
+                <!-- Tab Meta Header -->
+                <div class="bg-[#131c31] px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-file-code text-indigo-400"></i> index.html</span>
+                    <span class="font-mono text-[10px] bg-slate-800 px-2 py-0.5 rounded text-indigo-300">HTML5 + CSS Enabled</span>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:border-indigo-500 transition cursor-pointer" @click="alert('System Load Normal')">
-                        <p class="text-sm text-slate-500">CPU Load</p>
-                        <p class="text-xl font-bold">12%</p>
-                    </div>
-                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:border-indigo-500 transition cursor-pointer" @click="alert('Memory Stable')">
-                        <p class="text-sm text-slate-500">Memory</p>
-                        <p class="text-xl font-bold">4.2GB</p>
-                    </div>
+                <!-- Overlay Editor Area -->
+                <div class="flex-1 relative editor-container overflow-hidden">
+                    <!-- Textarea Input (Invisible text, catches typing/scrolling) -->
+                    <textarea x-model="code" 
+                              @scroll="syncScroll($event)"
+                              ref="textarea"
+                              class="absolute inset-0 bg-transparent text-transparent caret-white code-font z-10 resize-none focus:outline-none focus:ring-0 whitespace-pre overflow-auto"
+                              placeholder="<!-- Tulis kode HTML lu di sini... -->"
+                              spellcheck="false"></textarea>
+                    
+                    <!-- Prism Highlighter Output (Rendered Behind Textarea) -->
+                    <pre class="absolute inset-0 bg-[#0f172a] pointer-events-none overflow-auto whitespace-pre z-0" 
+                         ref="highlightedArea"><code class="language-html code-font" x-ref="codeOutput"></code></pre>
                 </div>
             </div>
+        </div>
 
-            <!-- Toolkit View -->
-            <div x-show="activeTab === 'tools'" x-cloak class="space-y-6">
-                <h2 class="text-2xl font-bold">Active Toolkits</h2>
-                <div class="grid gap-3">
-                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div>
-                            <p class="font-semibold text-white">JSON Validator</p>
-                            <p class="text-xs text-slate-500">Utility for parsing raw data</p>
-                        </div>
-                        <button class="px-4 py-2 bg-slate-800 hover:bg-indigo-600 rounded-lg text-sm transition" @click="alert('Fungsi dijalankan!')">
-                            <i class="fa-solid fa-play"></i> Run
-                        </button>
-                    </div>
+        <!-- RIGHT COLUMN: LIVE INTERACTIVE PREVIEW -->
+        <div class="bg-white rounded-xl border border-slate-800 flex flex-col overflow-hidden h-[calc(100vh-120px)] lg:h-auto min-h-[450px]">
+            <!-- Preview Meta Header -->
+            <div class="bg-slate-100 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 font-medium">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-eye text-emerald-500"></i> Live Preview Screen</span>
+                <div class="flex gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                 </div>
             </div>
+            <!-- Iframe Sandbox Sandbox Renderer -->
+            <div class="flex-1 bg-white relative">
+                <iframe :srcdoc="code" class="w-full h-full border-none bg-white"></iframe>
+            </div>
+        </div>
+        
+    </main>
 
-        </main>
-    </div>
+    <!-- FOOTER STATUS BAR -->
+    <footer class="h-8 border-t border-slate-900 bg-[#070a11] px-4 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+        <div><i class="fa-solid fa-circle text-emerald-500 text-[8px] animate-ping mr-1.5"></i> Sandbox Engine Active</div>
+        <div>UTF-8</div>
+    </footer>
 
+    <!-- APP LOGIC (Alpine.js State) -->
+    <script>
+        function editorApp() {
+            return {
+                code: `<!-- Contoh Web App Modern -->\n<div style="font-family: sans-serif; padding: 40px; text-align: center; color: #333;">\n    <h1 style="color: #4f46e5;">Halo Rycl! 🔥</h1>\n    <p style="color: #666;">Silakan modifikasi kode ini. Preview bakal update instan tanpa reload.</p>\n</div>`,
+                
+                init() {
+                    // Initial highlight load
+                    this.$nextTick(() => this.highlightCode());
+                },
+
+                highlightCode() {
+                    const rawCode = this.code;
+                    const target = this.$refs.codeOutput;
+                    // Inject text to code container and let Prism parsing
+                    target.textContent = rawCode;
+                    Prism.highlightElement(target);
+                },
+
+                syncScroll(e) {
+                    // Sync text area scrolling positions to preview highlighter
+                    const pre = this.$refs.highlightedArea;
+                    pre.scrollTop = e.target.scrollTop;
+                    pre.scrollLeft = e.target.scrollLeft;
+                },
+
+                handleDrop(e) {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0 && files[0].type.startsWith('image/')) {
+                        this.processImageFile(files[0]);
+                    }
+                },
+
+                handleFileSelect(e) {
+                    const files = e.target.files;
+                    if (files.length > 0) {
+                        this.processImageFile(files[0]);
+                    }
+                },
+
+                processImageFile(file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const base64String = event.target.result;
+                        // Magic String Generation: Generate raw standard HTML Image Tags
+                        const imgTag = `\n<!-- Tag Gambar Magic Inserted -->\n<img src="${base64String}" alt="${file.name}" style="max-width: 100%; height: auto; border-radius: 12px; margin: 15px 0;">\n`;
+                        
+                        // Insert tag into current code cursor position or just append
+                        this.code += imgTag;
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                downloadHtml() {
+                    const blob = new Blob([this.code], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'core_export_' + Math.floor(Date.now() / 1000) + '.html';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                },
+
+                clearEditor() {
+                    if(confirm("Hapus seluruh kode di editor?")) {
+                        this.code = "";
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
 
