@@ -1,260 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevCore // Dashboard</title>
-    <!-- Tailwind CSS for Modern Styling -->
+    <title>DevCore Interactive</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Clean Icons -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font: Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="bg-[#0f172a] text-slate-200 min-h-screen flex">
+<body class="bg-slate-950 text-slate-200 font-sans p-4 md:p-8" x-data="{ activeTab: 'dashboard', sidebarOpen: false }">
 
-    <!-- SIDEBAR NAVIGATION -->
-    <aside class="w-64 bg-[#1e293b] border-r border-slate-800 flex flex-col justify-between">
-        <div>
-            <!-- Logo Header -->
-            <div class="p-6 border-b border-slate-800 flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-lg text-white">
-                    <i class="fa-solid font-lg fa-terminal"></i>
-                </div>
-                <span class="text-xl font-bold tracking-wider text-white">DEVCORE<span class="text-blue-500">.</span></span>
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="md:w-64 space-y-4">
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+                <h1 class="text-xl font-bold text-white mb-6">CORE<span class="text-indigo-500">.</span>SYSTEM</h1>
+                <nav class="space-y-2">
+                    <button @click="activeTab = 'dashboard'" :class="activeTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'" class="w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3">
+                        <i class="fa-solid fa-chart-line"></i> Dashboard
+                    </button>
+                    <button @click="activeTab = 'tools'" :class="activeTab === 'tools' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'" class="w-full text-left px-4 py-3 rounded-lg transition-all flex items-center gap-3">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Toolkits
+                    </button>
+                </nav>
             </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-800 min-h-[500px]">
             
-            <!-- Menu Items -->
-            <nav class="p-4 space-y-2">
-                <a href="#" class="flex items-center gap-4 px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl font-medium transition">
-                    <i class="fa-solid fa-gauge-high w-5 text-center"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-slate-200 rounded-xl font-medium transition">
-                    <i class="fa-solid fa-database w-5 text-center"></i>
-                    <span>SQL Query Lab</span>
-                </a>
-                <a href="#" class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-slate-200 rounded-xl font-medium transition">
-                    <i class="fa-solid fa-code-branch w-5 text-center"></i>
-                    <span>System Shell</span>
-                </a>
-                <a href="#" class="flex items-center gap-4 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-slate-200 rounded-xl font-medium transition">
-                    <i class="fa-solid fa-gears w-5 text-center"></i>
-                    <span>Settings</span>
-                </a>
-            </nav>
-        </div>
-
-        <!-- User Quick Status -->
-        <div class="p-4 border-t border-slate-800 flex items-center gap-3">
-            <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center border border-slate-600">
-                <i class="fa-solid fa-user text-slate-300"></i>
-            </div>
-            <div class="overflow-hidden">
-                <p class="text-sm font-semibold text-white truncate">Administrator</p>
-                <span class="text-xs text-emerald-400 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span> Node Active
-                </span>
-            </div>
-        </div>
-    </aside>
-
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col min-h-screen overflow-y-auto">
-        <!-- Top Navbar -->
-        <header class="h-20 bg-[#1e293b]/50 backdrop-blur-md border-b border-slate-800 px-8 flex items-center justify-between sticky top-0 z-10">
-            <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl w-96">
-                <i class="fa-solid fa-magnifying-glass text-slate-500"></i>
-                <input type="text" placeholder="Search logs, queries, or assets..." class="bg-transparent border-none text-sm text-slate-300 focus:outline-none w-full">
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="relative p-2.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-xl hover:bg-slate-700 transition">
-                    <i class="fa-solid fa-bell"></i>
-                    <span class="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-                </button>
-                <button class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-xl flex items-center gap-2 transition">
-                    <i class="fa-solid fa-plus"></i> Execute New
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Dashboard Container -->
-        <div class="p-8 space-y-8 flex-1">
-            
-            <!-- ROW 1: STATUS CARDS -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <!-- Card 1 -->
-                <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-400 font-medium">Memory Usage</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">42.8 MB</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-microchip text-xl"></i>
-                    </div>
+            <!-- Dashboard View -->
+            <div x-show="activeTab === 'dashboard'" x-cloak class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">System Status</h2>
+                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-xs font-mono">LIVE</span>
                 </div>
-                <!-- Card 2 -->
-                <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-400 font-medium">Total Execution</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">1,482</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-xl"></i>
-                    </div>
-                </div>
-                <!-- Card 3 -->
-                <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-400 font-medium">Active Workers</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">8 / 12</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-server text-xl"></i>
-                    </div>
-                </div>
-                <!-- Card 4 -->
-                <div class="bg-[#1e293b] p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-slate-400 font-medium">Database Latency</p>
-                        <h3 class="text-2xl font-bold text-emerald-400 mt-1">4 ms</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-gauge text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ROW 2: LIVE ACTIONS & SPLIT VIEW -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <!-- Compiler / Code Sandbox Block (2 Columns) -->
-                <div class="lg:col-span-2 bg-[#1e293b] rounded-2xl border border-slate-800 overflow-hidden flex flex-col">
-                    <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-[#1e293b]/50">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-code text-blue-400"></i>
-                            <span class="font-semibold text-white">Live Input Processor</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">RAW TEXT</span>
-                            <button class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded-md transition font-medium">Run Parse</button>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:border-indigo-500 transition cursor-pointer" @click="alert('System Load Normal')">
+                        <p class="text-sm text-slate-500">CPU Load</p>
+                        <p class="text-xl font-bold">12%</p>
                     </div>
-                    <div class="p-5 flex-1 flex flex-col">
-                        <textarea placeholder="// Ketik atau paste teks/JSON lu di sini..." class="w-full flex-1 min-h-[180px] bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-sm text-blue-300 focus:outline-none focus:border-slate-700 resize-none"></textarea>
-                    </div>
-                </div>
-
-                <!-- Active Sessions Log (1 Column) -->
-                <div class="bg-[#1e293b] rounded-2xl border border-slate-800 flex flex-col">
-                    <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-clock-rotate-left text-purple-400"></i>
-                            <span class="font-semibold text-white">Recent Activities</span>
-                        </div>
-                        <i class="fa-solid fa-arrows-rotate text-slate-500 cursor-pointer hover:text-slate-400"></i>
-                    </div>
-                    <div class="p-5 space-y-4 flex-1 overflow-y-auto max-h-[220px]">
-                        <!-- Log Item 1 -->
-                        <div class="flex items-start gap-3 text-sm">
-                            <div class="text-emerald-400 mt-0.5"><i class="fa-solid fa-circle-check"></i></div>
-                            <div>
-                                <p class="text-slate-300 font-medium">Query GET users_table success</p>
-                                <span class="text-xs text-slate-500 font-mono">12:34:02 - 200 OK</span>
-                            </div>
-                        </div>
-                        <!-- Log Item 2 -->
-                        <div class="flex items-start gap-3 text-sm">
-                            <div class="text-blue-400 mt-0.5"><i class="fa-solid fa-circle-info"></i></div>
-                            <div>
-                                <p class="text-slate-300 font-medium">Session token regenerated</p>
-                                <span class="text-xs text-slate-500 font-mono">12:30:15 - AUTH</span>
-                            </div>
-                        </div>
-                        <!-- Log Item 3 -->
-                        <div class="flex items-start gap-3 text-sm">
-                            <div class="text-rose-400 mt-0.5"><i class="fa-solid fa-circle-exclamation"></i></div>
-                            <div>
-                                <p class="text-slate-300 font-medium">Failed compilation at line 42</p>
-                                <span class="text-xs text-slate-500 font-mono">12:15:44 - ERR_VAL</span>
-                            </div>
-                        </div>
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:border-indigo-500 transition cursor-pointer" @click="alert('Memory Stable')">
+                        <p class="text-sm text-slate-500">Memory</p>
+                        <p class="text-xl font-bold">4.2GB</p>
                     </div>
                 </div>
             </div>
 
-            <!-- ROW 3: DATATABLE (KONTEN JELAS MANTAP) -->
-            <div class="bg-[#1e293b] rounded-2xl border border-slate-800 overflow-hidden">
-                <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-list-check text-emerald-400"></i>
-                        <span class="font-semibold text-white">Database Buffer / Row Monitor</span>
+            <!-- Toolkit View -->
+            <div x-show="activeTab === 'tools'" x-cloak class="space-y-6">
+                <h2 class="text-2xl font-bold">Active Toolkits</h2>
+                <div class="grid gap-3">
+                    <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <p class="font-semibold text-white">JSON Validator</p>
+                            <p class="text-xs text-slate-500">Utility for parsing raw data</p>
+                        </div>
+                        <button class="px-4 py-2 bg-slate-800 hover:bg-indigo-600 rounded-lg text-sm transition" @click="alert('Fungsi dijalankan!')">
+                            <i class="fa-solid fa-play"></i> Run
+                        </button>
                     </div>
-                    <span class="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-full border border-slate-700">Showing 3 active records</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900/50 border-b border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                                <th class="py-4 px-6">ID</th>
-                                <th class="py-4 px-6">Object Name</th>
-                                <th class="py-4 px-6">Target Schema</th>
-                                <th class="py-4 px-6">Status</th>
-                                <th class="py-4 px-6 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800 text-sm font-medium text-slate-300">
-                            <!-- Row 1 -->
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-4 px-6 font-mono text-slate-500">#00412</td>
-                                <td class="py-4 px-6 text-white">main_app_v2_cache</td>
-                                <td class="py-4 px-6 font-mono text-xs text-blue-400">redis://local:6379</td>
-                                <td class="py-4 px-6">
-                                    <span class="px-2.5 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">STABLE</span>
-                                </td>
-                                <td class="py-4 px-6 text-right space-x-2">
-                                    <button class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="text-slate-400 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <!-- Row 2 -->
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-4 px-6 font-mono text-slate-500">#00411</td>
-                                <td class="py-4 px-6 text-white">user_auth_session</td>
-                                <td class="py-4 px-6 font-mono text-xs text-blue-400">mysql://db_cluster_1</td>
-                                <td class="py-4 px-6">
-                                    <span class="px-2.5 py-1 text-xs font-semibold bg-blue-500/10 text-blue-400 rounded-md border border-blue-500/20">SYNCING</span>
-                                </td>
-                                <td class="py-4 px-6 text-right space-x-2">
-                                    <button class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="text-slate-400 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                            <!-- Row 3 -->
-                            <tr class="hover:bg-slate-800/30 transition">
-                                <td class="py-4 px-6 font-mono text-slate-500">#00410</td>
-                                <td class="py-4 px-6 text-white">temp_log_dump</td>
-                                <td class="py-4 px-6 font-mono text-xs text-blue-400">sqlite://local_storage</td>
-                                <td class="py-4 px-6">
-                                    <span class="px-2.5 py-1 text-xs font-semibold bg-amber-500/10 text-amber-400 rounded-md border border-amber-500/20">IDLE</span>
-                                </td>
-                                <td class="py-4 px-6 text-right space-x-2">
-                                    <button class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="text-slate-400 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
-        </div>
-    </main>
+        </main>
+    </div>
 
 </body>
 </html>
