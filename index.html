@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoreEditor // Web Builder</title>
-    <!-- Tailwind CSS -->
+    <title>CoreBuilder // Pro Sandbox</title>
+    <!-- Tailwind CSS (Main UI) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
+    <!-- Alpine.js (State Engine) -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Prism.js Themes for Code Highlighting -->
+    <!-- Prism.js Themes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .code-font { font-family: 'Fira Code', monospace; }
-        /* Trick to overlay textarea on top of highlighted code */
         .editor-container textarea, .editor-container pre {
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.6;
             padding: 16px;
             margin: 0;
             width: 100%;
@@ -36,83 +36,107 @@
       x-data="editorApp()" 
       x-init="$watch('code', value => highlightCode())">
 
-    <!-- HEADER BAR -->
-    <header class="h-16 border-b border-slate-800 bg-[#0f172a]/80 backdrop-blur-md px-4 md:px-6 flex items-center justify-between sticky top-0 z-50">
+    <!-- TOP HEADER -->
+    <header class="h-16 border-b border-slate-800 bg-[#0f172a]/90 backdrop-blur-md px-4 md:px-6 flex items-center justify-between sticky top-0 z-50">
         <div class="flex items-center gap-3">
             <div class="bg-indigo-600 p-2 rounded-lg text-white">
-                <i class="fa-solid fa-code text-sm"></i>
+                <i class="fa-solid fa-code-suburban text-sm"></i>
             </div>
-            <span class="text-sm md:text-base font-bold tracking-wider text-white">CORE<span class="text-indigo-500">EDITOR</span></span>
+            <span class="text-xs md:text-sm font-bold tracking-wider text-white">CORE<span class="text-indigo-500">BUILDER v2</span></span>
         </div>
 
-        <!-- Toolbar Actions -->
         <div class="flex items-center gap-2">
-            <button @click="downloadHtml" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs md:text-sm rounded-lg flex items-center gap-2 transition">
-                <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Export .html</span>
+            <button @click="downloadHtml" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg flex items-center gap-2 transition">
+                <i class="fa-solid fa-cloud-arrow-down"></i> <span>Export HTML</span>
             </button>
-            <button @click="clearEditor" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 rounded-lg text-xs md:text-sm transition" title="Clear Code">
-                <i class="fa-solid fa-trash-can"></i>
+            <button @click="resetToDefault" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition" title="Reset Default Struktur">
+                <i class="fa-solid fa-arrow-rotate-left"></i>
             </button>
         </div>
     </header>
 
-    <!-- MAIN WORKSPACE -->
-    <main class="flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1600px] w-full mx-auto">
+    <!-- MAIN INTERACTIVE WRAPPER -->
+    <main class="flex-1 p-3 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 w-full mx-auto max-w-[1700px]">
         
-        <!-- LEFT COLUMN: EDITOR & DROPZONE -->
-        <div class="flex flex-col gap-4 h-[calc(100vh-120px)] lg:h-auto min-h-[450px]">
+        <!-- KIRI: UTILITY, DRAG-DROP, & EDITOR -->
+        <div class="flex flex-col gap-4 h-auto">
             
-            <!-- MAGIC DRAG & DROP ZONE -->
-            <div class="border-2 border-dashed border-slate-800 hover:border-indigo-500 bg-[#0f172a] rounded-xl p-4 transition text-center relative"
-                 @dragover.prevent="dragOver = true"
-                 @dragleave.prevent="dragOver = false"
-                 @drop.prevent="handleDrop($event)"
-                 :class="dragOver ? 'border-indigo-500 bg-indigo-600/5' : ''"
-                 x-data="{ dragOver: false }">
-                <input type="file" id="fileInput" class="hidden" accept="image/*" @change="handleFileSelect($event)">
-                <label for="fileInput" class="cursor-pointer flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-slate-200">
-                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-xl animate-pulse"></i>
-                    <p class="text-xs md:text-sm font-medium">Tarik & lempar gambar lu di sini, atau <span class="text-indigo-400 underline">klik buat upload</span></p>
-                </label>
+            <!-- MAGIC DRAG & DROP & COLOR PICKER SUITE -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- Dropzone Component -->
+                <div class="sm:col-span-2 border border-dashed border-slate-800 hover:border-indigo-500 bg-[#0f172a] rounded-xl p-3 transition relative flex items-center justify-center"
+                     @dragover.prevent="dragOver = true"
+                     @dragleave.prevent="dragOver = false"
+                     @drop.prevent="handleDrop($event)"
+                     :class="dragOver ? 'border-indigo-500 bg-indigo-600/5' : ''"
+                     x-data="{ dragOver: false }">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" @change="handleFileSelect($event)">
+                    <label for="fileInput" class="cursor-pointer flex items-center gap-3 text-slate-400 hover:text-slate-200">
+                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 text-lg"></i>
+                        <p class="text-xs font-medium">Drop gambar di sini / <span class="text-indigo-400 underline">Klik upload</span></p>
+                    </label>
+                </div>
+
+                <!-- Color Tool Component -->
+                <div class="bg-[#0f172a] border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg border border-slate-700 relative overflow-hidden flex-shrink-0" :style="`background-color: ${selectedColor}`">
+                            <input type="color" x-model="selectedColor" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">HEX Picker</p>
+                            <p class="text-xs font-mono font-bold text-white truncate" x-text="selectedColor"></p>
+                        </div>
+                    </div>
+                    <button @click="copyColor" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs transition" title="Copy hex code">
+                        <i class="fa-solid fa-copy"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- CODE EDITOR INPUT -->
-            <div class="flex-1 bg-[#0f172a] rounded-xl border border-slate-800 flex flex-col overflow-hidden relative">
-                <!-- Tab Meta Header -->
+            <!-- QUICK COLOR PALETTE SHORTCUTS -->
+            <div class="bg-[#0f172a] border border-slate-800 rounded-xl p-3 flex flex-wrap items-center gap-2">
+                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-1">Preset:</span>
+                <template x-for="color in colorPresets">
+                    <button @click="selectedColor = color; copyColor()" 
+                            class="w-5 h-5 rounded-full border border-slate-900 transition transform hover:scale-110" 
+                            :style="`background-color: ${color}`" 
+                            :title="`Klik buat salin ${color}`"></button>
+                </template>
+            </div>
+
+            <!-- MODERN SOURCE CODE CONTAINER -->
+            <div class="flex-1 bg-[#0f172a] rounded-xl border border-slate-800 flex flex-col overflow-hidden relative min-h-[380px] lg:min-h-[500px]">
                 <div class="bg-[#131c31] px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-file-code text-indigo-400"></i> index.html</span>
-                    <span class="font-mono text-[10px] bg-slate-800 px-2 py-0.5 rounded text-indigo-300">HTML5 + CSS Enabled</span>
+                    <span class="flex items-center gap-2 font-mono"><i class="fa-solid fa-file-code text-indigo-400"></i> index.html (Realistis)</span>
+                    <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-indigo-400 font-mono">Tailwind CDN Active</span>
                 </div>
                 
-                <!-- Overlay Editor Area -->
                 <div class="flex-1 relative editor-container overflow-hidden">
-                    <!-- Textarea Input (Invisible text, catches typing/scrolling) -->
+                    <!-- Pure Input Area -->
                     <textarea x-model="code" 
                               @scroll="syncScroll($event)"
                               ref="textarea"
                               class="absolute inset-0 bg-transparent text-transparent caret-white code-font z-10 resize-none focus:outline-none focus:ring-0 whitespace-pre overflow-auto"
-                              placeholder="<!-- Tulis kode HTML lu di sini... -->"
                               spellcheck="false"></textarea>
                     
-                    <!-- Prism Highlighter Output (Rendered Behind Textarea) -->
+                    <!-- Prism Engine Render -->
                     <pre class="absolute inset-0 bg-[#0f172a] pointer-events-none overflow-auto whitespace-pre z-0" 
                          ref="highlightedArea"><code class="language-html code-font" x-ref="codeOutput"></code></pre>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: LIVE INTERACTIVE PREVIEW -->
-        <div class="bg-white rounded-xl border border-slate-800 flex flex-col overflow-hidden h-[calc(100vh-120px)] lg:h-auto min-h-[450px]">
-            <!-- Preview Meta Header -->
+        <!-- KANAN: LIVE PREVIEW ENGINE -->
+        <div class="bg-white rounded-xl border border-slate-900 flex flex-col overflow-hidden min-h-[400px] lg:h-auto">
             <div class="bg-slate-100 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 font-medium">
-                <span class="flex items-center gap-2"><i class="fa-solid fa-eye text-emerald-500"></i> Live Preview Screen</span>
+                <span class="flex items-center gap-2"><i class="fa-solid fa-square-poll-vertical text-emerald-500"></i> Render Engine Output</span>
                 <div class="flex gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                    <span class="w-2 h-2 rounded-full bg-slate-300"></span>
                 </div>
             </div>
-            <!-- Iframe Sandbox Sandbox Renderer -->
+            <!-- Live Sandboxed Output Viewport -->
             <div class="flex-1 bg-white relative">
                 <iframe :srcdoc="code" class="w-full h-full border-none bg-white"></iframe>
             </div>
@@ -120,36 +144,54 @@
         
     </main>
 
-    <!-- FOOTER STATUS BAR -->
-    <footer class="h-8 border-t border-slate-900 bg-[#070a11] px-4 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <div><i class="fa-solid fa-circle text-emerald-500 text-[8px] animate-ping mr-1.5"></i> Sandbox Engine Active</div>
-        <div>UTF-8</div>
-    </footer>
+    <!-- NOTIFICATION SYSTEM -->
+    <div x-show="toast.show" 
+         x-transition 
+         x-cloak
+         class="fixed bottom-12 right-6 bg-slate-900 border border-indigo-500 text-indigo-400 px-4 py-2.5 rounded-xl shadow-2xl z-50 text-xs flex items-center gap-2 font-mono">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span x-text="toast.message"></span>
+    </div>
 
-    <!-- APP LOGIC (Alpine.js State) -->
+    <!-- CODE CONTROLLER LOGIC -->
     <script>
         function editorApp() {
+            // Default boilerplate template HTML5 Realistis dengan Tailwind terpasang
+            const defaultTemplate = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Core App Sandbox</title>\n    <!-- Tailwind CSS Engine -->\n    <script src="https://cdn.tailwindcss.com"><\/script>\n    <!-- Font Icon Pro -->\n    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">\n</head>\n<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-center items-center p-6">\n\n    <!-- Mulai Bikin UI Mantap Lu Di Sini -->\n    <div class="max-w-md w-full bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-center">\n        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl">\n            <i class="fa-solid fa-layer-group"></i>\n        </div>\n        <h1 class="text-xl font-bold tracking-tight text-slate-900">Sandbox Siap Dipake!</h1>\n        <p class="text-xs text-slate-500 mt-2">Struktur HTML5 udah lengkap bawaan pabrik. Tinggal lu hancurin atau susun ulang kodenya.</p>\n    </div>\n\n</body>\n</html>`;
+
             return {
-                code: `<!-- Contoh Web App Modern -->\n<div style="font-family: sans-serif; padding: 40px; text-align: center; color: #333;">\n    <h1 style="color: #4f46e5;">Halo Rycl! 🔥</h1>\n    <p style="color: #666;">Silakan modifikasi kode ini. Preview bakal update instan tanpa reload.</p>\n</div>`,
-                
+                code: defaultTemplate,
+                selectedColor: '#6366f1',
+                // Preset palet warna modern (Slate, Zinc, Indigo, Emerald, Rose, Amber, Cyan, Purple)
+                colorPresets: ['#0f172a', '#3b82f6', '#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#06b6d4', '#a855f7', '#ec4899', '#ffffff'],
+                toast: { show: false, message: '' },
+
                 init() {
-                    // Initial highlight load
                     this.$nextTick(() => this.highlightCode());
                 },
 
                 highlightCode() {
-                    const rawCode = this.code;
                     const target = this.$refs.codeOutput;
-                    // Inject text to code container and let Prism parsing
-                    target.textContent = rawCode;
+                    target.textContent = this.code;
                     Prism.highlightElement(target);
                 },
 
                 syncScroll(e) {
-                    // Sync text area scrolling positions to preview highlighter
                     const pre = this.$refs.highlightedArea;
                     pre.scrollTop = e.target.scrollTop;
                     pre.scrollLeft = e.target.scrollLeft;
+                },
+
+                triggerToast(msg) {
+                    this.toast.message = msg;
+                    this.toast.show = true;
+                    setTimeout(() => this.toast.show = false, 2500);
+                },
+
+                copyColor() {
+                    navigator.clipboard.writeText(this.selectedColor).then(() => {
+                        this.triggerToast(`Copied: ${this.selectedColor} to clipboard!`);
+                    });
                 },
 
                 handleDrop(e) {
@@ -170,11 +212,15 @@
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         const base64String = event.target.result;
-                        // Magic String Generation: Generate raw standard HTML Image Tags
-                        const imgTag = `\n<!-- Tag Gambar Magic Inserted -->\n<img src="${base64String}" alt="${file.name}" style="max-width: 100%; height: auto; border-radius: 12px; margin: 15px 0;">\n`;
+                        const imgTag = `\n    <!-- Magic Image Uploaded -->\n    <img src="${base64String}" alt="${file.name}" class="max-w-full h-auto rounded-xl border my-4 inline-block">\n`;
                         
-                        // Insert tag into current code cursor position or just append
-                        this.code += imgTag;
+                        // Cari posisi closing body buat selipin tag biar ga berantakan
+                        if (this.code.includes('</body>')) {
+                            this.code = this.code.replace('</body>', `${imgTag}</body>`);
+                        } else {
+                            this.code += imgTag;
+                        }
+                        this.triggerToast("Gambar berhasil disisipkan ke struktur!");
                     };
                     reader.readAsDataURL(file);
                 },
@@ -184,16 +230,17 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'core_export_' + Math.floor(Date.now() / 1000) + '.html';
+                    a.download = 'core_project_' + Math.floor(Date.now() / 1000) + '.html';
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                 },
 
-                clearEditor() {
-                    if(confirm("Hapus seluruh kode di editor?")) {
-                        this.code = "";
+                resetToDefault() {
+                    if (confirm("Balikin isi editor ke default struktur HTML5 awal?")) {
+                        this.code = defaultTemplate;
+                        this.triggerToast("Struktur di-reset!");
                     }
                 }
             }
